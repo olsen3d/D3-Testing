@@ -25,3 +25,6 @@ d3.csv('data.csv')
 let sum = d3.sum(clients, d => d.weight)
 let mean = d3.mean(clients, d => d.weight)
 let extent = d3.extent(clients, d => d.weight)
+
+//SVG practice
+
