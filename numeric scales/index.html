@@ -12,7 +12,7 @@
     const KG_PER_POUND = 0.45
     const METER_PER_INCH = 0.0254
 
-    let container = d3.select("#container")
+    let container = d3.select("#container") //select the container
     d3.csv("data.csv").then(showData)
 
     function write(text) {
@@ -20,19 +20,22 @@
     }
 
     function showData(clients) {
-        
-        let join = container.selectAll("div")
-            .data(clients)
 
-        join.enter()
-            .append("div")
-            .text(d => d.Name)
-            .style("background-color", "blue")
-            .style("margin", "5px")
-            .style("color", "white")
-            .style("width", 100)
+      let max = d3.max(clients, d => d.Weight)
+      let scale = d3.scaleLinear()
+          .range([0,200])
+          .domain([0,max])
 
+      let join = container.selectAll("div")
+          .data(clients)
 
+      join.enter()
+          .append("div")
+          .text(d => d.Name + ": " + scale(d.Weight))
+          .style("background-color", "blue")
+          .style("margin", "5px")
+          .style("color", "white")
+          .style("width", d => scale(d.Weight))
     }
 
 
