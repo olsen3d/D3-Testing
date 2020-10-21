@@ -36,7 +36,7 @@
         let maxValue = d3.max(data, d => d.price)
         
         let yScale = d3.scaleLinear()
-            .range([bodyHeight, 0]) // the range is inverted because svg space
+            .range([bodyHeight, 0]) // the range is inverted because svg space is inverted
             .domain([0, maxValue]);
 
         body.append('g')
