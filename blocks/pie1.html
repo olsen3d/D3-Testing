@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <style>
+
+/*Styling for the lines connecting the labels to the slices*/
+polyline{
+    opacity: 0.5;
+    stroke: black;
+    stroke-width: 2px;
+    fill: none;
+}
+
+
+/* Make the percentage on the text labels bold*/
+.labelName tspan {
+    font-style: normal;
+    font-weight: 700;
+}
+
+/* In biology we generally italicise species names. */
+.labelName {
+    font-size: 0.9em;
+    font-style: italic;
+}
+  </style>
+</head>
+
+<body> 
+  <script>
+
+    var svg = d3.select("body").append("svg")
+      .attr("width", 960)
+      .attr("height", 500)
+      .append("g");
+    
+    svg.append("g")
+			.attr("class", "slices");
+    svg.append("g")
+      .attr("class", "labels");
+    svg.append("g")
+      .attr("class", "lines");
+    var width = 400;
+    var height = 300;
+    var radius = Math.min(width, height)/2;
+    var color = d3.scaleOrdinal(['#2A4255','#086E6C','#4C9F66','#B8EEA1']);
+    var data = [26,25,10,30];
+    const data2 = [
+    {name: 'AGG', value: 25},
+    {name: 'VTI', value: 30},
+    {name: 'VEA', value: 40},
+    {name: 'VWO', value: 5}
+  ]
+    
+    
+    
+    var pie = d3.pie().sort(null).value(d => d.value);
+    var bigPie = d3.pie().padAngle(.025).sort(null).value(d => d.value);
+    var arc = d3.arc().innerRadius(radius*0.8).outerRadius(radius*0.4);
+    var bigArc = d3.arc().innerRadius(radius*0.85).outerRadius(radius*0.35)
+    
+     var outerArc = d3.arc()
+                .outerRadius(radius * 1)
+                .innerRadius(radius * 1);
+     
+    svg.attr("transform", "translate(" + (width / 2 + 25) + "," + (height / 2 + 25) + ")");
+    
+    svg.selectAll('path')
+    .data(bigPie(data2))
+    .enter()
+    .append('path')
+    .attr('d', arc)
+    .attr("class", "arc")
+    .attr('fill', (d,i)=> color(i))
+    .on('mouseenter', function(d){
+      const current = this
+      const others = svg.selectAll('.arc').filter(function() {return this != current})
+      others.transition().attr('d', arc).attr('opacity', 0.3)
+      d3.select(this).transition().attr('d', bigArc).attr('opacity', 1)
+    })
+    .on('mouseleave', function(d) {
+      const current = this
+      const others = d3.selectAll('.arc').filter(function() {return this != current})
+      others.transition().attr('opacity', 1)
+      d3.select(this).transition().attr('d', arc)
+    })
+    svg.append('g').classed('labels',true);
+    svg.append('g').classed('lines',true);
+     
+
+     var polyline = svg.select('.lines')
+                .selectAll('polyline')
+                .data(pie(data2))
+              .enter().append('polyline')
+                .attr('points', function(d) {
+                    var pos = outerArc.centroid(d);
+                    pos[0] = radius * 0.95 * (midAngle(d) < Math.PI ? 1 : -1);
+                    return [arc.centroid(d), outerArc.centroid(d), pos]
+                });
+        
+        // const testText = svg.select('.labels').selectAll('text')
+        // .data(pie(data))
+        // .enter().append('text')
+        // .attr('dy', '.35em')
+        // .html(function(d) {return `testing text ${d.data}`})
+        // .attr("transform", function(d) {
+        //   var c = arc.centroid(d);
+        //   return "translate(" + c[0]*2 +"," + c[1]*1.6 + ")";
+        //   })
+    	
+	
+       var label = svg.select('.labels').selectAll('text')
+                .data(pie(data2))
+              .enter().append('text')
+                .attr('dy', '.35em')
+                .html(function(d) {
+                    return `${d.data.name} - ${d.data.value}%`;
+                })
+                .attr('transform', function(d) {
+                    var pos = outerArc.centroid(d);
+                    pos[0] = radius * 1 * (midAngle(d) < Math.PI ? 1 : -1);
+                    return `translate(${pos[0]},${pos[1]})`
+                })
+                .style('text-anchor', function(d) {
+                    return (midAngle(d)) < Math.PI ? 'start' : 'end';
+                })
+                .on('mouseenter', function(d) {
+                  const currentLabel = this
+                  const othersLabel = svg.selectAll('.labels').selectAll('text').filter(function() {return this != current})
+                  othersLabel.transition().attr('opacity', 0)
+                  d3.select(this).transition().attr('opacity', 1)
+                })
+    
+    //  svg.append('text')
+    //                     .attr('class', 'toolCircle')
+    //                     .attr('dy', -15) // hard-coded. can adjust this to adjust text vertical alignment in tooltip
+    //                     .html('Balanced') // add text to the circle.
+    //                     .append('p')
+    //                     .style('font-size', '.9em')
+    //                     .style('text-anchor', 'middle');
+    
+    function midAngle(d) { return d.startAngle + (d.endAngle - d.startAngle) / 2; } 
+    
+    
+  </script> 
+</body>
